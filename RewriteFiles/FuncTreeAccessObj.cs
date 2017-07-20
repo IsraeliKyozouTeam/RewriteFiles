@@ -25,6 +25,11 @@ namespace RewriteFiles
         {
             return tableAdapter.GetDataByID(id);
         }
+
+        public string GetFunctionNameByID(int id)
+        {
+            return tableAdapter.GetFuncNamePerId(id).ToString();
+        }
         
     }
 }

@@ -9,20 +9,34 @@ namespace RewriteFiles
     class FunctionData
     {
 
-        public string Original { get; protected set; }
+        public string CodeOriginal { get; protected set; }
         public string Fixed { get; protected set; }
         public string Path { get; protected set; }
         public int Ident { get; protected set; }
         public string Name { get; protected set; }
+        public int calledFuncID { get; protected set; }
+        public bool canBeWritten { get; protected set; }
 
 
-        public FunctionData(int id, string origin, string fix, string path, string name)
+        public FunctionData(int id, string origin, string fix, string path, string name, int calledID, string writeable)
         {
             Ident = id;
-            Original = origin;
+            CodeOriginal = origin;
             Fixed = fix;
             Path = path;
             Name = name;
+            calledFuncID = calledID;
+
+            if (writeable == "False")
+                canBeWritten = false;
+            else
+                canBeWritten = true;
+
+        }
+
+        public void RegisterFix(string fix)
+        {
+            Fixed = fix;
         }
 
 

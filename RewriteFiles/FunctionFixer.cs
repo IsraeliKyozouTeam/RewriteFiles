@@ -16,24 +16,19 @@ namespace RewriteFiles
             
 
 
-            string calledFuncName = "";
+            string calledFuncName = dao.GetFunctionNameByID( func.calledFuncID );
 
-            string replaceExpression = "function .+?(\\().*?\\)";
-            string replaceByFuncNameExpression = "function " + calledFuncName + "(\\().*?\\)";
+            string replaceExpression = @"function .+?(?<ParamStart>\().*?\)";
+            string replaceByFuncNameExpression = calledFuncName + @"(\().*?\)";
             string callbackReplace = "(callback, ";
 
-            string fixedFunc = "";
+            string fixedFunc = func.CodeOriginal;
 
-            fixedFunc = Regex.Replace(func.Original, replaceExpression,
-                                                                delegate (Match m) {
-                                                                    return m.Groups[1].Value.Replace(m.Groups[1].Value, callbackReplace);
-                                                                }, RegexOptions.Singleline);
+            fixedFunc = Regex.Replace(fixedFunc, replaceExpression, (m) => (m.Groups[1].Value.Replace(m.Groups[1].Value, callbackReplace)), RegexOptions.Singleline);
+            
+            fixedFunc = Regex.Replace(fixedFunc, replaceByFuncNameExpression, (m) => ( m.Groups[1].Value.Replace(m.Groups[1].Value, callbackReplace) ), RegexOptions.Singleline);
 
-
-            fixedFunc = Regex.Replace(func.Original, replaceByFuncNameExpression,
-                                                                delegate (Match m) {
-                                                                    return m.Groups[1].Value.Replace(m.Groups[1].Value, callbackReplace);
-                                                                }, RegexOptions.Singleline);
+            func.RegisterFix(fixedFunc);
 
             return fixedFunc;
         }
@@ -42,6 +37,13 @@ namespace RewriteFiles
         {
             // TODO: Check if the function is fixable !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+            if (func.canBeWritten == false)
+                return false;
+            
+            if (Regex.Matches(func.CodeOriginal, "ShowPostableModalWindow").Count > 0)
+                return false;
+
+            
             return true;
         }
 

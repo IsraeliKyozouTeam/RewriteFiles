@@ -15,15 +15,32 @@ namespace RewriteFiles
         static void Main(string[] args)
         {
             
-            FunctionsTreeAccess DA = new FunctionsTreeAccess();
 
             string pathWebUI = ConfigurationManager.AppSettings["pathWebUI"];
 
             Rewriter writer = new Rewriter( pathWebUI );
 
-            writer.RunRewrite(  );
-            
-                
+            FuncTreeAccessObj dao = new FuncTreeAccessObj();
+
+            //writer.RunRewrite( dao );
+
+
+            #region Debugging FunctionFixer
+
+            string pathStr = @"C:\Users\roysh_000\Desktop\TestDir\FunctionFixTest.txt";
+            string testFuncStr = File.ReadAllText(pathStr);
+            string funcName = Regex.Match(testFuncStr, "function (.*?\\(.*?\\))", RegexOptions.Singleline).Groups[1].Value;
+
+            FunctionData testFunc = new FunctionData(39953, testFuncStr, null, pathStr, funcName, 39489, "True");
+
+            FunctionFixer.FixFunction(testFunc, dao);
+
+            Console.WriteLine(testFunc.Fixed);
+            Console.ReadKey();
+
+            #endregion
+
+
         }
 
     }

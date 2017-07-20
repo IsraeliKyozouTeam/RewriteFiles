@@ -21,16 +21,11 @@ namespace RewriteFiles
 
 
 
-        public void RunRewrite( /* Get a DataObject from the database */ )
+        public void RunRewrite( FuncTreeAccessObj dao )
         {
-
-            // Use the DataObject to iterate over all of the level 1 functions and
-            // foreach lvl we will create a tree of FunctionData that goes all the way
-            // to the final level. Then iterate over that list, and saves the ID's of all 
-            // fixed functions so as to not run twice.
-
+           
             FunctionsDS.FunctionsTreeDataTable table = new FunctionsDS.FunctionsTreeDataTable();
-            FuncTreeAccessObj dao = new FuncTreeAccessObj();
+
             List<FunctionData> funcList = new List<FunctionData>();
             List<FunctionData> funcsToFixManual = new List<FunctionData>();
 
@@ -42,15 +37,14 @@ namespace RewriteFiles
 
                 foreach (FunctionsDS.FunctionsTreeRow row in table)
                 {
-                    string funcName = Regex.Match(row.FuncCode, "function (.+?\\(.*?\\))", RegexOptions.Singleline).Groups[1].Value;
-                    FunctionData currFunc = new FunctionData(row.CalledFuncId, row.FuncCode, row.FixedFunction, Path.Combine( pathToWrite, row.FileName), funcName );
-                    funcList.Add( currFunc );
-
+                    string funcName = Regex.Match(row.FuncCode, "function (.*?\\(.*?\\))", RegexOptions.Singleline).Groups[1].Value;
+                    FunctionData currFunc = new FunctionData(row.CalledFuncId, row.FuncCode, row.FixedFunction, Path.Combine(pathToWrite, row.FileName), funcName, row.CalledFuncId, row.CanBeReWriten);
+                    funcList.Add(currFunc);
                     
                     // Check if the function has not been fixed
-                    if ((currFunc.Fixed == "" || currFunc.Fixed == null))
+                    if (string.IsNullOrWhiteSpace( currFunc.Fixed ))
                     {
-                        if (FunctionFixer.IsFuncFixable(currFunc) && i > 2)
+                        if (FunctionFixer.IsFuncFixable(currFunc))
                         {
                             // If the function has not been fixed and it can be fixed, fix it. 
                             FunctionFixer.FixFunction(currFunc, dao);
@@ -58,6 +52,7 @@ namespace RewriteFiles
                         else
                         {
                             // If it cannot be fixed then call for a manual fix
+                            // and dont rewrite the function (As it needs a manual fix)
                             funcsToFixManual.Add(currFunc);
                             continue;
                         }
@@ -66,13 +61,14 @@ namespace RewriteFiles
                     // Once we have made sure the function has a fixed version, go ahead
                     // and overwrite the function to file.
                     OverwriteFunc(currFunc);
-                    
+
                 }
             }
 
             CallForManualFix(funcsToFixManual);
 
         }
+
 
         public void OverwriteFunc(FunctionData func)
         {
@@ -83,9 +79,7 @@ namespace RewriteFiles
             {
 
                 text = File.ReadAllText(func.Path);
-                
                 string replaceExpression = "(function " + func.Name + "\\(.+?\\).+?{.+?}).+?function";
-
                 text = Regex.Replace(text, replaceExpression,
                                                                 delegate (Match m) {
                                                                     return m.Groups[1].Value.Replace(m.Groups[1].Value, func.Fixed);
@@ -101,8 +95,10 @@ namespace RewriteFiles
             }
         }
 
+
         public void CallForManualFix(List<FunctionData> funcList)
         {
+
             if (funcList.Count == 0)
                 return;
 
@@ -120,6 +116,8 @@ namespace RewriteFiles
             writer.Close();
             
         }
+
+
 
 
         /*
