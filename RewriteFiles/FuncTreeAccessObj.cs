@@ -31,5 +31,10 @@ namespace RewriteFiles
             return tableAdapter.GetFuncNamePerId(id).ToString();
         }
         
+        public void UpdateFixedFuncByID(int id, string fixedFunc)
+        {
+            tableAdapter.SetFixedCode(fixedFunc, id);
+        }
+
     }
 }

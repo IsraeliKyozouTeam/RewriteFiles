@@ -28,7 +28,7 @@ namespace RewriteFiles
 
             List<FunctionData> funcList = new List<FunctionData>();
             List<FunctionData> funcsToFixManual = new List<FunctionData>();
-
+            
 
             // Currently assuming that level 6 is the final level
             for (int i = 1; i <= 6; i++)
@@ -37,10 +37,12 @@ namespace RewriteFiles
 
                 foreach (FunctionsDS.FunctionsTreeRow row in table)
                 {
-                    string funcName = Regex.Match(row.FuncCode, "function (.*?\\(.*?\\))", RegexOptions.Singleline).Groups[1].Value;
-                    FunctionData currFunc = new FunctionData(row.CalledFuncId, row.FuncCode, row.FixedFunction, Path.Combine(pathToWrite, row.FileName), funcName, row.CalledFuncId, row.CanBeReWriten);
+                    string funcName = Regex.Match(row.FuncCode, "function (?<FuncName>.*?\\(.*?\\))", RegexOptions.Singleline).Groups["FuncName"].Value;
+                    FunctionData currFunc = new FunctionData(row.Id, row.FuncCode, row.FixedFunction, Path.Combine(pathToWrite, row.FileName), funcName, row.CalledFuncId, row.CanBeReWriten);
                     funcList.Add(currFunc);
-                    
+
+                    Console.WriteLine(currFunc.Ident + ", " + i);
+
                     // Check if the function has not been fixed
                     if (string.IsNullOrWhiteSpace( currFunc.Fixed ))
                     {
@@ -51,8 +53,9 @@ namespace RewriteFiles
                         }
                         else
                         {
-                            // If it cannot be fixed then call for a manual fix
-                            // and dont rewrite the function (As it needs a manual fix)
+                            Console.WriteLine("Function {0}, {1} cannot be fixed!", currFunc.Ident, currFunc.Name);
+                            // If it cannot be fixed then add it to the list of funcs that
+                            // need a manual fix and dont rewrite the function (a.k.a wait for the func to be fixed before writing it).
                             funcsToFixManual.Add(currFunc);
                             continue;
                         }
@@ -61,10 +64,12 @@ namespace RewriteFiles
                     // Once we have made sure the function has a fixed version, go ahead
                     // and overwrite the function to file.
                     OverwriteFunc(currFunc);
-
                 }
             }
 
+
+            // Once all the functions have been passed through then we can go ahead and
+            // run all the functions through the manual fix call.
             CallForManualFix(funcsToFixManual);
 
         }
@@ -72,22 +77,18 @@ namespace RewriteFiles
 
         public void OverwriteFunc(FunctionData func)
         {
-            string text = "";
+            string output = "";
 
             // if need to change directory of files for rewriting - do here
             try
             {
 
-                text = File.ReadAllText(func.Path);
-                string replaceExpression = "(function " + func.Name + "\\(.+?\\).+?{.+?}).+?function";
-                text = Regex.Replace(text, replaceExpression,
-                                                                delegate (Match m) {
-                                                                    return m.Groups[1].Value.Replace(m.Groups[1].Value, func.Fixed);
-                                                                }, RegexOptions.Singleline);
+                output = File.ReadAllText(func.Path);
+                string replaceExpression = "(?<Func>function " + func.RegexName + @".*?{.*?})(?<NextFuncStart>.*?function)";
+                output = Regex.Replace(output, replaceExpression, (m) => ( func.Fixed + m.Groups["NextFuncStart"].Value), RegexOptions.Singleline);
 
-                File.WriteAllText(func.Path, text);
-
-
+                File.WriteAllText(func.Path, output);
+                
             }
             catch
             {
@@ -108,10 +109,13 @@ namespace RewriteFiles
 
             foreach (FunctionData func in funcList)
             {
+                writer.WriteLine(func.Ident);
                 writer.WriteLine(func.Name);
                 writer.WriteLine(func.Path);
                 writer.WriteLine();
             }
+
+            writer.WriteLine(funcList.Count);
 
             writer.Close();
             

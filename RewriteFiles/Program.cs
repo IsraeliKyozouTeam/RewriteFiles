@@ -22,16 +22,16 @@ namespace RewriteFiles
 
             FuncTreeAccessObj dao = new FuncTreeAccessObj();
 
-            //writer.RunRewrite( dao );
+            writer.RunRewrite( dao );
 
-
+           /* 
             #region Debugging FunctionFixer
 
             string pathStr = @"C:\Users\roysh_000\Desktop\TestDir\FunctionFixTest.txt";
             string testFuncStr = File.ReadAllText(pathStr);
             string funcName = Regex.Match(testFuncStr, "function (.*?\\(.*?\\))", RegexOptions.Singleline).Groups[1].Value;
 
-            FunctionData testFunc = new FunctionData(39953, testFuncStr, null, pathStr, funcName, 39489, "True");
+            FunctionData testFunc = new FunctionData(40027, testFuncStr, null, pathStr, funcName, 40012, "True");
 
             FunctionFixer.FixFunction(testFunc, dao);
 
@@ -39,7 +39,9 @@ namespace RewriteFiles
             Console.ReadKey();
 
             #endregion
+            */
 
+            Console.ReadKey();
 
         }
 

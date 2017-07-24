@@ -39,6 +39,19 @@ namespace RewriteFiles
             Fixed = fix;
         }
 
+        public string RegexName
+        {
+            get
+            {
+                string name = Name;
+
+                name = name.Replace("(", @"\(");
+                name = name.Replace(")", @"\)");
+
+                return name;
+            }
+        }
+
 
 
 
