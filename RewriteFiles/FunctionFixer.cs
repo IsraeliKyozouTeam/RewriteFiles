@@ -12,27 +12,7 @@ namespace RewriteFiles
         public static string FixFunction(FunctionData func, FuncTreeAccessObj dao)
         {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            return "";
-
-            /*
+            
             // TODO: Fix the function !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             string calledFuncName = dao.GetFunctionNameByID(func.calledFuncID);
@@ -67,11 +47,11 @@ namespace RewriteFiles
 
             
             dao.UpdateFixedFuncByID(func.Ident, func.Fixed);
-            
+            */
             func.RegisterFix(fixedFunc);
 
             return fixedFunc;
-            */
+            
         }
 
         public static bool IsFuncFixable( FunctionData func )
