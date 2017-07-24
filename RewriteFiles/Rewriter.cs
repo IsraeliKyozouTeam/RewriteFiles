@@ -18,8 +18,7 @@ namespace RewriteFiles
         {
             pathToWrite = pathToWriteTo;
         }
-
-
+        
 
         public void RunRewrite( FuncTreeAccessObj dao )
         {
